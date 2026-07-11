@@ -1,7 +1,23 @@
 server:
   port: 8080
 
+spring:
+  application:
+    name: ws-chat
+
 logging:
   level:
     com.chat: DEBUG
     org.springframework.web.socket: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ws-chat

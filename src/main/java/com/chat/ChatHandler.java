@@ -9,11 +9,34 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+
 @Component
 public class ChatHandler extends TextWebSocketHandler {
 
     private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
+
+    private final Counter messagesReceived;
+    private final Counter messagesBroadcast;
+
     private final ObjectMapper mapper = new ObjectMapper();
+
+    public ChatHandler(MeterRegistry registry) {
+
+        this.messagesReceived = Counter.builder("ws.messages.received")
+                .description("Total de mensajes recibidos del cliente")
+                .register(registry);
+
+        this.messagesBroadcast = Counter.builder("ws.messages.broadcast")
+                .description("Total de mensajes enviados a clientes")
+                .register(registry);
+
+        Gauge.builder("ws.sessions.active", sessions, Set::size)
+                .description("Sesiones WebSocket activas en este momento")
+                .register(registry);
+    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -24,6 +47,7 @@ public class ChatHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         try {
+            messagesReceived.increment();
             ChatMessage incoming = mapper.readValue(message.getPayload(), ChatMessage.class);
 
             ChatMessage outgoing = new ChatMessage();
@@ -53,6 +77,7 @@ public class ChatHandler extends TextWebSocketHandler {
                 synchronized (s) {
                     s.sendMessage(frame);
                 }
+                messagesBroadcast.increment();
             }
         }
     }
