@@ -15,9 +15,19 @@ management:
     web:
       exposure:
         include: health,info,prometheus,metrics
+
   endpoint:
     prometheus:
       enabled: true
+
   metrics:
     tags:
       application: ws-chat
+
+  tracing:
+    sampling:
+      probability: 1.0
+
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans

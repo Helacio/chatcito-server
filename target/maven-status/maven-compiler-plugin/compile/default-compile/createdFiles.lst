@@ -1,4 +1,4 @@
-com\chat\WebSocketConfig.class
 com\chat\ChatHandler.class
+com\chat\WebSocketConfig.class
 com\chat\ChatMessage.class
 com\chat\WsServerApplication.class
